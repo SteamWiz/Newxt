@@ -1,0 +1,43 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "newxt"
+description = "Edit files in one pass with instructions via stdin"
+authors = ["Steampunk Wizard <newxt@steamwiz.io>"]
+license = "MIT"
+readme = "PACKAGE.md"
+version = "0.1.1"
+homepage = 'https://steamwiz.io'
+repository = 'https://github.com/SteamWiz/Newxt'
+
+[tool.poetry.dependencies]
+python = "^3.13"
+wizlib = "^4.0.8"
+requests = "^2.32.3"
+pyyaml = "^6.0.3"
+
+[tool.poetry.group.dev.dependencies]
+pycodestyle = "^2.11.0"
+autopep8 = "^2.0.4"
+coverage = "^7.3.0"
+pytest = "^9.0.2"
+
+[tool.poetry.scripts]
+newxt = "newxt:NewxtApp.main"
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:tool.poetry.version"]
+tag_format = "v{version}"
+build_command = ""
+
+[tool.semantic_release.branches.main]
+match = "main"
+prerelease = false
+
+[tool.semantic_release.remote.token]
+env = "GH_TOKEN"
+
+[tool.semantic_release.publish]
+upload_to_vcs_release = false

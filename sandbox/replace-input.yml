@@ -1,0 +1,13 @@
+search: |
+  def main():
+      """Main function."""
+      print(greet("World"))
+      result = calculate_sum(5, 3)
+      print(f"The sum is: {result}")
+replace: |
+  def main():
+      """A very new main function."""
+      result = calculate_sum(500, 300)
+      print(f"{greet('Universe'), the sum is {result}")
+
+  
