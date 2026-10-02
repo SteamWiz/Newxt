@@ -15,7 +15,6 @@ repository = 'https://github.com/SteamWiz/Newxt'
 [tool.poetry.dependencies]
 python = "^3.13"
 wizlib = "^4.0.8"
-requests = "^2.32.3"
 pyyaml = "^6.0.3"
 
 [tool.poetry.group.dev.dependencies]
