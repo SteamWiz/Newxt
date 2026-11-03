@@ -6,7 +6,7 @@ from newxt.command import NewxtCommand
 
 
 class ReplaceCommand(NewxtCommand):
-    """Replace text in a file based on YAML instructions"""
+    """Replace text in a file based on one or more YAML edit instructions"""
 
     name = 'replace'
 
@@ -46,36 +46,53 @@ class ReplaceCommand(NewxtCommand):
         except yaml.YAMLError:
             raise ValueError("Invalid YAML in stdin")
 
-        # Validate instructions
-        if not isinstance(instructions, dict):
-            raise ValueError("YAML must be a dictionary")
-
-        if 'search' not in instructions:
-            raise ValueError("Missing 'search' in YAML")
-
-        if 'replace' not in instructions:
-            raise ValueError("Missing 'replace' in YAML")
-
-        search = instructions['search']
-        replace = instructions['replace']
-
-        # Check for blank values
-        if not search or (
-            isinstance(search, str) and not search.strip()
-        ):
-            raise ValueError("'search' cannot be blank")
-
-        if not replace or (
-            isinstance(replace, str) and not replace.strip()
-        ):
-            raise ValueError("'replace' cannot be blank")
+        edits = self.parse_edits(instructions)
 
         # Read file content
         with open(self.file, 'r') as f:
             content = f.read()
 
-        # Replace only first occurrence
-        result = content.replace(str(search), str(replace), 1)
+        # Apply edits in order, replacing only the first occurrence of each
+        for label, search, replace in edits:
+            if search not in content:
+                raise ValueError(f"{label}'search' text not found")
+            content = content.replace(search, replace, 1)
 
-        self.status = 'Replacement complete'
-        return result
+        if len(edits) == 1:
+            self.status = 'Replacement complete'
+        else:
+            self.status = f'{len(edits)} replacements complete'
+        return content
+
+    @staticmethod
+    def parse_edits(instructions):
+        """Return a list of (label, search, replace) tuples from parsed YAML,
+        which is either a single edit mapping or a list of them"""
+        if isinstance(instructions, dict):
+            items = [instructions]
+            labelled = False
+        elif isinstance(instructions, list):
+            if not instructions:
+                raise ValueError("YAML list must contain at least one edit")
+            items = instructions
+            labelled = True
+        else:
+            raise ValueError("YAML must be a dictionary or a list")
+
+        edits = []
+        for index, item in enumerate(items, start=1):
+            label = f"Edit {index}: " if labelled else ""
+            if not isinstance(item, dict):
+                raise ValueError(f"{label}edit must be a dictionary")
+            for key in ('search', 'replace'):
+                if key not in item:
+                    raise ValueError(f"{label}Missing '{key}' in YAML")
+                value = item[key]
+                if not value or (
+                    isinstance(value, str) and not value.strip()
+                ):
+                    raise ValueError(f"{label}'{key}' cannot be blank")
+            edits.append(
+                (label, str(item['search']), str(item['replace']))
+            )
+        return edits
